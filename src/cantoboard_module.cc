@@ -8,6 +8,7 @@
 #include <rime/context.h>
 #include <rime/dict/dictionary.h>
 #include <rime/dict/prism.h>
+#include <rime/menu.h>
 #include <rime/registry.h>
 #include <rime/service.h>
 
@@ -112,5 +113,26 @@ void SetInput(RimeSessionId session_id, const string& value) {
   if (!ctx) return;
   ctx->set_input(value);
 }
+
+bool UnlearnCandidate(RimeSessionId session_id, size_t candidate_index) {
+  an<Session> session(Service::instance().GetSession(session_id));
+  if (!session) return false;
+  Context *ctx = session->context();
+  if (!ctx) return false;
+  
+  Composition& comp = ctx->composition();
+  if (comp.empty() || !comp.back().menu)
+    return false;
+  
+  int index = candidate_index;
+  int candidate_count = comp.back().menu->Prepare(index + 1);
+  if (candidate_count <= index)
+    return false;
+  comp.back().selected_index = index;
+  comp.back().tags.insert("unlearn");
+  return ctx->DeleteCurrentSelection();
+}
+
+} // namepsace cantoboard
 
 RIME_REGISTER_MODULE(cantoboard)
