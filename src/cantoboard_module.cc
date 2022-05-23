@@ -49,14 +49,6 @@ static void Load10KeysDict() {
   }
 }
 
-void SetInput(RimeSessionId session_id, const string& value) {
-  an<Session> session(Service::instance().GetSession(session_id));
-  if (!session) return;
-  Context *ctx = session->context();
-  if (!ctx) return;
-  ctx->set_input(value);
-}
-
 size_t GetSelectedTextEndIndex(RimeSessionId session_id) {
   an<Session> session(Service::instance().GetSession(session_id));
   if (!session) return;
@@ -99,8 +91,8 @@ void List10KeysPrefixes(const char* prefix, set<string> &results) {
       SyllableId syllable_id = accessor.syllable_id();
       
       // Filter out 特定詞組異讀字 e.g 粉絲 fen1 si2
-      TableAccessor tableAccessor = table->QueryWords(syllable_id);
-      if (!tableAccessor.exhausted()) {
+      TableAccessor table_accessor = table->QueryWords(syllable_id);
+      if (!table_accessor.exhausted()) {
         string syllable = table->GetSyllableById(syllable_id);
         syllable.pop_back(); // Remove tone
         results.insert(syllable);
@@ -113,6 +105,12 @@ void List10KeysPrefixes(const char* prefix, set<string> &results) {
   return results;
 }
 
+void SetInput(RimeSessionId session_id, const string& value) {
+  an<Session> session(Service::instance().GetSession(session_id));
+  if (!session) return;
+  Context *ctx = session->context();
+  if (!ctx) return;
+  ctx->set_input(value);
 }
 
 RIME_REGISTER_MODULE(cantoboard)
